@@ -3,9 +3,7 @@ import SimpleLightbox from "simplelightbox";
 import "simplelightbox/dist/simple-lightbox.min.css";
 
 
-let lightboxInstance = null; // інкапсульований інстанс
-
-const refs = {};
+let lightboxInstance = null; 
 
 function initLightbox(selector = '.gallery a') {
 
@@ -21,16 +19,16 @@ function initLightbox(selector = '.gallery a') {
 function refreshLightbox() {
   if (!lightboxInstance) {
     initLightbox();
-    return;
+  } else {
+    lightboxInstance.refresh();
   }
-  lightboxInstance.refresh();
 }
 
-
 export function destroyLightbox() {
-  if (!lightboxInstance) return;
-  lightboxInstance.destroy();
-  lightboxInstance = null;
+  if (lightboxInstance) {
+    lightboxInstance.destroy();
+    lightboxInstance = null;
+  }
 }
 
 
@@ -70,29 +68,48 @@ export function createGallery(images, galleryEl) {
     .join('');
 
    
-  galleryEl.innerHTML = markup;
+  const loaderEl = galleryEl.querySelector('.loader-wrapper');
 
+  
+  loaderEl.insertAdjacentHTML('beforebegin', markup);
 
-  const imagesList = galleryEl.querySelectorAll('img');
-  const loadPromises = [...imagesList].map(img => new Promise(resolve => {
-    if (img.complete) return resolve();
-    img.onload = img.onerror = resolve;
-  }));
+    const newImages = Array.from(
+    galleryEl.querySelectorAll('li.gallery-item img')
+  ).slice(-images.length);
 
-
-  return Promise.all(loadPromises).then(() => {
+  return Promise.all(
+    newImages.map(img =>
+      new Promise(resolve => {
+        if (img.complete) resolve();
+        img.onload = img.onerror = resolve;
+      })
+    )
+  ).then(() => {
    
     refreshLightbox();
   });
 }
 
-export function clearGallery(galleryEl){
-  galleryEl.innerHTML = "";
-};
-export function showLoader(loaderEl){
-  if (!loaderEl) return;
-  loaderEl.classList.remove("hidden")
-};
-export function hideLoader(loaderEl){
-  if (!loaderEl) return;
-  loaderEl.classList.add("hidden")};
+export function clearGallery(galleryEl) {
+  galleryEl.innerHTML = `
+    <li class="loader-wrapper hidden">
+      <span class="loader"></span>
+    </li>`;
+  destroyLightbox(); // important!
+}
+
+export function showLoader(loaderEl) {
+  loaderEl?.classList.remove("hidden");
+}
+
+export function hideLoader(loaderEl) {
+  loaderEl?.classList.add("hidden");
+}
+
+export function showLoadMoreButton(btn) {
+  btn?.classList.remove("hidden");
+}
+
+export function hideLoadMoreButton(btn) {
+  btn?.classList.add("hidden");
+}
