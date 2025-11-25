@@ -17,11 +17,8 @@ function initLightbox(selector = '.gallery a') {
 
 
 function refreshLightbox() {
-  if (!lightboxInstance) {
-    initLightbox();
-  } else {
-    lightboxInstance.refresh();
-  }
+if (!lightboxInstance) initLightbox();
+else lightboxInstance.refresh();
 }
 
 export function destroyLightbox() {
@@ -70,8 +67,12 @@ export function createGallery(images, galleryEl) {
    
   const loaderEl = galleryEl.querySelector('.loader-wrapper');
 
-  
-  loaderEl.insertAdjacentHTML('beforebegin', markup);
+  if (loaderEl) {
+loaderEl.insertAdjacentHTML('beforebegin', markup);
+} else {
+galleryEl.insertAdjacentHTML('beforeend', markup);
+}
+
 
     const newImages = Array.from(
     galleryEl.querySelectorAll('li.gallery-item img')
@@ -95,21 +96,23 @@ export function clearGallery(galleryEl) {
     <li class="loader-wrapper hidden">
       <span class="loader"></span>
     </li>`;
-  destroyLightbox(); // important!
+  destroyLightbox(); 
 }
 
-export function showLoader(loaderEl) {
-  loaderEl?.classList.remove("hidden");
+export function showLoader() {
+const loader = document.querySelector('.loader-wrapper');
+if (loader) loader.classList.remove('hidden');
 }
 
-export function hideLoader(loaderEl) {
-  loaderEl?.classList.add("hidden");
+export function hideLoader() {
+const loader = document.querySelector('.loader-wrapper');
+if (loader) loader.classList.add('hidden');
 }
 
 export function showLoadMoreButton(btn) {
-  btn?.classList.remove("hidden");
+if (btn) btn.classList.remove('hidden');
 }
 
 export function hideLoadMoreButton(btn) {
-  btn?.classList.add("hidden");
+if (btn) btn.classList.add('hidden');
 }

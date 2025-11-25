@@ -18,15 +18,23 @@ let currentQuery = "";
 let currentPage = 1;
 const perPage = 15; 
 let totalPages = 0;
+let endMessageShown = false;
 
  async function onFormSubmit(event){
 event.preventDefault();
  
 const query = event.target.elements["search-text"]?.value.trim();
-if (!query) return;
+if (!query) {
+  iziToast.warning({
+    message: "Please enter a search query.",
+    position: "topRight",
+  });
+  return;
+}
 
 currentQuery = query;
-  currentPage = 1;
+currentPage = 1;
+endMessageShown = false;
 
  clearGallery(refs.gallery);
  hideLoadMoreButton(refs.galleryBtn);
@@ -45,6 +53,7 @@ currentQuery = query;
     totalPages=Math.ceil(data.totalHits / perPage);
 
     await createGallery(data.hits, refs.gallery); 
+
     if (currentPage < totalPages) {
       showLoadMoreButton(refs.galleryBtn);
     }
@@ -67,6 +76,7 @@ async function onLoadMoreClick(event){
     const data = await getImagesByQuery(currentQuery, currentPage, perPage);
 
     await createGallery(data.hits, refs.gallery);
+
 const firstCard = refs.gallery.querySelector('li');
     const cardHeight = firstCard ? firstCard.getBoundingClientRect().height : 0;
 
@@ -77,11 +87,20 @@ const firstCard = refs.gallery.querySelector('li');
 
 
     if (currentPage >= totalPages) {
-      iziToast.info({ message: "We're sorry, but you've reached the end of search results.", position: "topRight" });
-      hideLoadMoreButton(refs.galleryBtn);
-    } else {
-      showLoadMoreButton(refs.galleryBtn);
-    }
+
+  if (!endMessageShown) {
+    iziToast.info({
+      message: "We're sorry, but you've reached the end of search results.",
+      position: "topRight"
+    });
+    endMessageShown = true;
+  }
+
+  hideLoadMoreButton(refs.galleryBtn);  
+
+} else {
+  showLoadMoreButton(refs.galleryBtn);
+}
 
   } catch (err) {
     console.error(err);
